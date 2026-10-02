@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ObytCalculator</title>
+    <meta name="description" content="A simple and clean web calculator app.">
+    <meta property="og:title" content="ObytCalculator">
+    <meta property="og:description" content="A simple and clean web calculator app.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="ObytLogo.png">
     <link rel="shortcut icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="ObytLogo.png">
@@ -13,43 +19,159 @@
 <div class="container">
  <div class="calculator">
    <h2 class="brand-title">OBytCal</h2>
-   <form>
+   <form onsubmit="calculate(); return false;">
     <div class="display">
-      <input type="text" name="display">
+      <input type="text" id="display" name="display" autocomplete="off" readonly>
     </div>
     <div>
-        <input type="button" value="AC" onclick="display.value = '' " class="operator">
-        <input type="button" value="DE" onclick="display.value = display.value.slice(0, -1)" class="operator">
-        <input type="button" value="." onclick="display.value += '.' " class="operator">
-        <input type="button" value="/" onclick="display.value += '/' " class="operator">
+        <input type="button" value="sin" onclick="appendChar('sin(')" class="operator">
+        <input type="button" value="cos" onclick="appendChar('cos(')" class="operator">
+        <input type="button" value="tan" onclick="appendChar('tan(')" class="operator">
+        <input type="button" value="(" onclick="appendChar('(')" class="operator">
+        <input type="button" value=")" onclick="appendChar(')')" class="operator">
     </div>
     <div>
-        <input type="button" value="7" onclick="display.value += '7' ">
-        <input type="button" value="8" onclick="display.value += '8' ">
-        <input type="button" value="9" onclick="display.value += '9' ">
-        <input type="button" value="*" onclick="display.value += '*' " class="operator">
+        <input type="button" value="AC" onclick="clearDisplay()" class="operator">
+        <input type="button" value="DE" onclick="deleteLast()" class="operator">
+        <input type="button" value="." onclick="appendChar('.')" class="operator">
+        <input type="button" value="/" onclick="appendChar('/')" class="operator">
     </div>
     <div>
-        <input type="button" value="4" onclick="display.value += '4' ">
-        <input type="button" value="5" onclick="display.value += '5' ">
-        <input type="button" value="6" onclick="display.value += '6' ">
-        <input type="button" value="-" onclick="display.value += '-' " class="operator">
+        <input type="button" value="7" onclick="appendChar('7')">
+        <input type="button" value="8" onclick="appendChar('8')">
+        <input type="button" value="9" onclick="appendChar('9')">
+        <input type="button" value="*" onclick="appendChar('*')" class="operator">
     </div>
     <div>
-        <input type="button" value="1" onclick="display.value += '1' ">
-        <input type="button" value="2" onclick="display.value += '2' ">
-        <input type="button" value="3" onclick="display.value += '3' ">
-        <input type="button" value="+" onclick="display.value += '+' " class="operator">
+        <input type="button" value="4" onclick="appendChar('4')">
+        <input type="button" value="5" onclick="appendChar('5')">
+        <input type="button" value="6" onclick="appendChar('6')">
+        <input type="button" value="-" onclick="appendChar('-')" class="operator">
     </div>
     <div>
-        <input type="button" value="00" onclick="display.value += '00' ">
-        <input type="button" value="0" onclick="display.value += '0' ">
-        <input type="button" value="=" onclick="display.value = eval(display.value)" class="equal operator">
+        <input type="button" value="1" onclick="appendChar('1')">
+        <input type="button" value="2" onclick="appendChar('2')">
+        <input type="button" value="3" onclick="appendChar('3')">
+        <input type="button" value="+" onclick="appendChar('+')" class="operator">
+    </div>
+    <div>
+        <input type="button" value="00" onclick="appendChar('00')">
+        <input type="button" value="0" onclick="appendChar('0')">
+        <input type="button" value="=" onclick="calculate()" class="equal operator">
     </div>
 
    </form>
  </div> 
 </div>
 
+<script>
+  const display = document.getElementById('display');
+
+  function appendChar(char) {
+    if (display.value === 'Error') {
+      display.value = '';
+    }
+    display.value += char;
+  }
+
+  function clearDisplay() {
+    display.value = '';
+  }
+
+  function deleteLast() {
+    if (display.value === 'Error') {
+      display.value = '';
+    } else {
+      // If deleting sin(, cos(, tan(, delete the whole token
+      if (display.value.endsWith('sin(') || display.value.endsWith('cos(') || display.value.endsWith('tan(')) {
+        display.value = display.value.slice(0, -4);
+      } else {
+        display.value = display.value.slice(0, -1);
+      }
+    }
+  }
+
+  // Trigonometric functions (degrees)
+  function sin(deg) {
+    const rad = (deg * Math.PI) / 180;
+    const res = Math.sin(rad);
+    return Math.abs(res) < 1e-15 ? 0 : Number(res.toFixed(10));
+  }
+
+  function cos(deg) {
+    const rad = (deg * Math.PI) / 180;
+    const res = Math.cos(rad);
+    return Math.abs(res) < 1e-15 ? 0 : Number(res.toFixed(10));
+  }
+
+  function tan(deg) {
+    if (Math.abs(deg % 180) === 90) return Infinity;
+    const rad = (deg * Math.PI) / 180;
+    const res = Math.tan(rad);
+    return Math.abs(res) < 1e-15 ? 0 : Number(res.toFixed(10));
+  }
+
+  function calculate() {
+    if (!display.value) return;
+    try {
+      let expr = display.value;
+      
+      // Auto-close open parentheses
+      const openCount = (expr.match(/\(/g) || []).length;
+      const closeCount = (expr.match(/\)/g) || []).length;
+      if (openCount > closeCount) {
+        expr += ')'.repeat(openCount - closeCount);
+      }
+
+      // Handle implicit multiplications like 2(3), (2)(3), 2sin(30)
+      expr = expr.replace(/(\d)\(/g, '$1*(')
+                 .replace(/\)(\d)/g, ')*$1')
+                 .replace(/\)\(/g, ')*(')
+                 .replace(/(\d)(sin|cos|tan)/g, '$1*$2')
+                 .replace(/\)(sin|cos|tan)/g, ')*$1');
+
+      // Validate allowed characters (digits, operators, parens, trig funcs)
+      if (/^[0-9+\-*/. ()sincostan]+$/.test(expr)) {
+        const fn = new Function('sin', 'cos', 'tan', 'Math', '"use strict"; return (' + expr + ')');
+        const result = fn(sin, cos, tan, Math);
+        if (result === Infinity || result === -Infinity || Number.isNaN(result) || result === undefined) {
+          display.value = 'Error';
+        } else {
+          display.value = String(result);
+        }
+      } else {
+        display.value = 'Error';
+      }
+    } catch {
+      display.value = 'Error';
+    }
+  }
+
+  // Keyboard support
+  window.addEventListener('keydown', (e) => {
+    if (e.key >= '0' && e.key <= '9') {
+      appendChar(e.key);
+    } else if (['+', '-', '*', '/'].includes(e.key)) {
+      appendChar(e.key);
+    } else if (e.key === '.') {
+      appendChar('.');
+    } else if (e.key === '(' || e.key === ')') {
+      appendChar(e.key);
+    } else if (e.key.toLowerCase() === 's') {
+      appendChar('sin(');
+    } else if (e.key.toLowerCase() === 'c') {
+      appendChar('cos(');
+    } else if (e.key.toLowerCase() === 't') {
+      appendChar('tan(');
+    } else if (e.key === 'Enter' || e.key === '=') {
+      e.preventDefault();
+      calculate();
+    } else if (e.key === 'Backspace') {
+      deleteLast();
+    } else if (e.key === 'Escape' || e.key === 'Delete') {
+      clearDisplay();
+    }
+  });
+</script>
 </body>
 </html>
